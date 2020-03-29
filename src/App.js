@@ -86,6 +86,7 @@ const testData = {
 export default function App() {
   const ref = React.useRef();
   const [currentNode, setCurrentNode] = React.useState(null);
+  console.log("currentNode", currentNode);
   useGraph({ ref });
 
   // const handleOnOpen = u => {};
