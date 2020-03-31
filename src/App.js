@@ -3,6 +3,8 @@ import "./styles.css";
 import Graph from "./graph";
 import useGraph from "./use-graph";
 
+// https://bl.ocks.org/mapio/53fed7d84cd1812d6a6639ed7aa83868
+
 const testData = {
   networkData: [
     {
@@ -83,24 +85,25 @@ const testData = {
   ]
 };
 
-export default function App() {
-  const ref = React.useRef();
+const App = () => {
+  const ref = React.useRef(null);
   const [currentNode, setCurrentNode] = React.useState(null);
-  console.log("currentNode", currentNode);
-  useGraph({ ref });
-
-  // const handleOnOpen = u => {};
+  const { handleToggle } = useGraph({
+    ref,
+    nodes: testData.networkData[0].nodes
+  });
 
   const createHandleClick = node => e => setCurrentNode(node);
 
   return (
     <>
+      <button onClick={handleToggle}>toggle text</button>
       <ul className="box">
         {testData.networkData[0].nodes.map(node => {
           const handleClick = createHandleClick(node);
           return (
             <li onClick={handleClick} key={node.nodeId}>
-              node.nodeId
+              {node.nodeId}
             </li>
           );
         })}
@@ -108,4 +111,6 @@ export default function App() {
       <Graph ref={ref} />
     </>
   );
-}
+};
+
+export default App;
