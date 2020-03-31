@@ -1,6 +1,5 @@
 import React from "react";
 import "./styles.css";
-import Graph from "./graph";
 import useGraph from "./use-graph";
 
 // https://bl.ocks.org/mapio/53fed7d84cd1812d6a6639ed7aa83868
@@ -87,13 +86,12 @@ const testData = {
 
 const App = () => {
   const ref = React.useRef(null);
-  const [currentNode, setCurrentNode] = React.useState(null);
-  const { handleToggle } = useGraph({
+  const { handleToggle, handleNodeSelection } = useGraph({
     ref,
     nodes: testData.networkData[0].nodes
   });
 
-  const createHandleClick = node => e => setCurrentNode(node);
+  const createHandleClick = node => e => handleNodeSelection(node);
 
   return (
     <>
@@ -108,7 +106,7 @@ const App = () => {
           );
         })}
       </ul>
-      <Graph ref={ref} />
+      <div ref={ref} id="graph" />
     </>
   );
 };

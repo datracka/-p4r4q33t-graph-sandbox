@@ -43,21 +43,24 @@ function getViewport() {
   return [viewPortWidth, viewPortHeight];
 }
 
+let zoom;
+
 const useGraph = ({ ref, nodes }) => {
   const [viewPortWidth, viewPortHeight] = getViewport();
 
   const widthScaled = viewPortWidth / 2; // twice
   const heightScaled = viewPortHeight / 2; // twice
 
+  const [svg, setSvg] = React.useState();
   const [nodeElements, setNodeElements] = React.useState();
   const [textElements, setTextElements] = React.useState();
 
   const [textVisibility, toogleTextVisibility] = React.useState(true);
 
   React.useEffect(() => {
-    const svg = d3.select(ref.current).append("svg");
+    const initialSvg = d3.select(ref.current).append("svg");
 
-    svg
+    initialSvg
       .attr("x", "0px")
       .attr("y", "0px")
       .attr("id", "canvas")
@@ -73,7 +76,7 @@ const useGraph = ({ ref, nodes }) => {
       .force("charge", d3.forceManyBody().strength(REPULSION))
       .force("center", d3.forceCenter(widthScaled / 2, heightScaled / 2));
 
-    const initialNodeElements = svg
+    const initialNodeElements = initialSvg
       .append("g")
       .attr("class", "nodes")
       .selectAll("circle")
@@ -84,7 +87,7 @@ const useGraph = ({ ref, nodes }) => {
       .attr("fill", "#000000")
       .style("pointer-events", "auto");
 
-    const initialTextElements = svg
+    const initialTextElements = initialSvg
       .append("g")
       .attr("class", "texts")
       .selectAll("text")
@@ -97,15 +100,43 @@ const useGraph = ({ ref, nodes }) => {
       .attr("dy", 4)
       .style("display", textVisibility ? "visible" : "none");
 
+    zoom = d3
+      .zoom()
+      .scaleExtent([1 / 15, 10])
+      .on("zoom", () => {
+        initialTextElements.attr("transform", d3.event.transform);
+        initialNodeElements.attr("transform", d3.event.transform);
+      });
+
+    initialSvg.call(zoom);
+
     simulation.nodes(nodes).on("tick", () => {
+      console.log("tick");
       initialNodeElements.attr("cx", node => node.x).attr("cy", node => node.y);
       initialTextElements.attr("x", node => node.x).attr("y", node => node.y);
-      setNodeElements(initialNodeElements);
-      setTextElements(initialTextElements);
     });
+
+    setNodeElements(initialNodeElements);
+    setTextElements(initialTextElements);
+    setSvg(initialSvg);
   }, []);
 
   const handleToggle = () => toogleTextVisibility(!textVisibility);
+  const handleNodeSelection = node => {
+    console.log(node, svg, zoom);
+
+    const scale = 1;
+    const translate = [1, 1];
+
+    /*  svg
+      .transition()
+      .duration(750)
+      // .call(zoom.translate(translate).scale(scale).event); // not in d3 v4
+      .call(
+        zoom.transform,
+        d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+      ); // updated for d3 v4 */
+  };
 
   React.useEffect(() => {
     textElements &&
@@ -113,7 +144,8 @@ const useGraph = ({ ref, nodes }) => {
   }, [textVisibility]);
 
   return {
-    handleToggle
+    handleToggle,
+    handleNodeSelection
   };
 };
 
